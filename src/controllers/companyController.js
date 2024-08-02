@@ -1,11 +1,11 @@
 import { companies } from "../models/index.js";
-import notFoundError from "../erros/notFoundError.js";
+import NotFoundError from "../errors/notFoundError.js";
 
 class CompanyController {
   static async registerCompany(req, res, next) {
     try {
       const newCompany = await companies.create(req.body);
-      res.status(201).json({ message: "Loja criada!", company: newCompany });
+      res.status(201).json({ company: newCompany });
     } catch (err) {
       next(err);
     }
@@ -15,12 +15,11 @@ class CompanyController {
     try {
       const id = req.params.id;
       const foundCompany = await companies.findById(id);
-
-      if (foundCompany !== null) {
-        res.status(200).json(foundCompany);
-      } else {
-        next(new notFoundError("Id do livro não localizado"));
+      if (!foundCompany) {
+        next(new NotFoundError("Company not found"));
+        return;
       }
+      res.status(200).json(foundCompany);
     } catch (err) {
       next(err);
     }
@@ -29,20 +28,17 @@ class CompanyController {
   static async updateCompany(req, res, next) {
     try {
       const id = req.params.id;
-      const foundCompany = await companies.findById(id);
+      const updatedCompany = await companies.findByIdAndUpdate(id, req.body, {
+        runValidators: true,
+        new: true,
+      });
 
-      if (foundCompany !== null) {
-        const id = req.params.id;
-        const updatedCompany = await companies.findByIdAndUpdate(id, req.body, {
-          runValidators: true,
-          new: true,
-        });
-        res
-          .status(200)
-          .json({ message: "Loja atualizada!", company: updatedCompany });
-      } else {
-        next(new notFoundError("Id do livro não localizado"));
+      if (!updatedCompany) {
+        next(new NotFoundError("Id da loja não localizado!"));
+        return;
       }
+
+      res.status(200).json({ company: updatedCompany });
     } catch (err) {
       next(err);
     }
@@ -50,17 +46,17 @@ class CompanyController {
 
   static async listCompanies(req, res, next) {
     try {
-      const search = await buildSearchQuery(req.query);
+      const search = buildSearchQuery(req.query);
 
-      if (search !== null) {
-        const searchResults = companies.find(search);
-
-        req.result = searchResults;
-
-        next();
-      } else {
+      if (!search) {
         res.status(200).send([]);
+        return;
       }
+
+      const searchResults = companies.find(search);
+      req.result = searchResults;
+
+      next();
     } catch (err) {
       next(err);
     }
@@ -72,9 +68,9 @@ class CompanyController {
   }
 }
 
-async function buildSearchQuery(params) {
+function buildSearchQuery(params) {
   const { name, city, document } = params;
-  
+
   let search = {};
 
   if (name) search.name = { $regex: name, $options: "i" };

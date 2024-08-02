@@ -1,6 +1,6 @@
-import invalidRequestError from "./badRequestError.js";
+import BadRequestError from "./badRequestError.js";
 
-class validationError extends invalidRequestError {
+class ValidationError extends BadRequestError {
   constructor(err) {
     const errorMessages = Object.values(err.errors)
       .map((err) => err.message)
@@ -10,4 +10,4 @@ class validationError extends invalidRequestError {
   }
 }
 
-export default validationError;
+export default ValidationError;

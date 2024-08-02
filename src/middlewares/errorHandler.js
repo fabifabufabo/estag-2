@@ -1,18 +1,26 @@
 import mongoose from "mongoose";
-import baseError from "../erros/baseError.js";
-import validationError from "../erros/validationError.js";
-import invalidRequestError from "../erros/badRequestError.js";
+import BaseError from "../errors/baseError.js";
+import ValidationError from "../errors/validationError.js";
+import BadRequestError from "../errors/badRequestError.js";
 
 function errorHandler(err, req, res, next) {
+  let error = new BaseError();
+
   if (err instanceof mongoose.Error.CastError) {
-    new invalidRequestError().sendResponse(res);
+    error = new BadRequestError();
   } else if (err instanceof mongoose.Error.ValidationError) {
-    new validationError(err).sendResponse(res);
-  } else if (err instanceof baseError) {
-    err.sendResponse(res);
-  } else {
-    new baseError().sendResponse(res);
+    error = new ValidationError(err);
+  } else if (err instanceof BaseError) {
+    error = err;
   }
+
+  return res.status(error.status).send({
+    errors: [
+      {
+        description: error.message,
+      },
+    ],
+  });
 }
 
 export default errorHandler;

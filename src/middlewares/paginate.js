@@ -1,5 +1,5 @@
 import CompanyController from "../controllers/companyController.js";
-import invalidRequestError from "../erros/badRequestError.js";
+import BadRequestError from "../errors/badRequestError.js";
 
 async function paginate(req, res, next) {
   try {
@@ -21,7 +21,7 @@ async function paginate(req, res, next) {
 
       res.status(200).json({ total: totalCompanies, data: paginatedResults });
     } else {
-      next(new invalidRequestError());
+      next(new BadRequestError());
     }
   } catch (err) {
     next(err);
