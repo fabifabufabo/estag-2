@@ -1,11 +1,14 @@
 import { companies } from "../models/index.js";
 import NotFoundError from "../errors/notFoundError.js";
+import validateCreateCompany from "../usecases/validateCreateCompany.js";
 
 class CompanyController {
   static async registerCompany(req, res, next) {
     try {
-      const newCompany = await companies.create(req.body);
-      res.status(201).json({ company: newCompany });
+      if (validateCreateCompany(req.body)) {
+        const newCompany = await companies.create(req.body);
+        res.status(201).json({ company: newCompany });
+      }
     } catch (err) {
       next(err);
     }
@@ -16,7 +19,7 @@ class CompanyController {
       const id = req.params.id;
       const foundCompany = await companies.findById(id);
       if (!foundCompany) {
-        next(new NotFoundError("Company not found"));
+        next(new NotFoundError("Loja não encontrada!"));
         return;
       }
       res.status(200).json(foundCompany);
@@ -27,18 +30,18 @@ class CompanyController {
 
   static async updateCompany(req, res, next) {
     try {
-      const id = req.params.id;
-      const updatedCompany = await companies.findByIdAndUpdate(id, req.body, {
-        runValidators: true,
-        new: true,
-      });
-
-      if (!updatedCompany) {
-        next(new NotFoundError("Id da loja não localizado!"));
-        return;
+      if (validateCreateCompany(req.body, true)) {
+        const id = req.params.id;
+        const updatedCompany = await companies.findByIdAndUpdate(id, req.body, {
+          runValidators: true,
+          new: true,
+        });
+        if (!updatedCompany) {
+          next(new NotFoundError("Loja não encontrada!"));
+          return;
+        }
+        res.status(200).json({ company: updatedCompany });
       }
-
-      res.status(200).json({ company: updatedCompany });
     } catch (err) {
       next(err);
     }
