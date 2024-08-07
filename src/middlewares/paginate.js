@@ -3,10 +3,9 @@ import BadRequestError from "../errors/badRequestError.js";
 
 async function paginate(req, res, next) {
   try {
-    let { limit = 5, from = 0, order = 1 } = req.query;
+    let { limit = 5, from = 0} = req.query;
 
     limit = parseInt(limit);
-    order = parseInt(order);
 
     const result = req.result;
 
