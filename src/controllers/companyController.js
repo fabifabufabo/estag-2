@@ -1,13 +1,14 @@
 import { companies } from "../models/index.js";
 import NotFoundError from "../errors/notFoundError.js";
-import validateCompany from "../usecases/validateCompany.js";
+import validateCompanyCreate from "../usecases/validateCompanyCreate.js";
+import validateCompanyUpdate from "../usecases/validateCompanyUpdate.js";
 import buildSearchQuery from "../usecases/buildSearchQuery.js";
 import BadRequestError from "../errors/badRequestError.js";
 
 class CompanyController {
   static async registerCompany(req, res, next) {
     try {
-      validateCompany(req.body);
+      validateCompanyCreate(req.body);
       const newCompany = await companies.create(req.body);
       res.status(201).json(newCompany);
     } catch (err) {
@@ -31,7 +32,7 @@ class CompanyController {
 
   static async updateCompany(req, res, next) {
     try {
-      validateCompany(req.body, true);
+      validateCompanyUpdate(req.body);
 
       const id = req.params.id;
       const updatedCompany = await companies.findByIdAndUpdate(id, req.body, {
