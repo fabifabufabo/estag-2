@@ -2,6 +2,7 @@ import { companies } from "../models/index.js";
 import NotFoundError from "../errors/notFoundError.js";
 import validateCompany from "../usecases/validateCompany.js";
 import buildSearchQuery from "../usecases/buildSearchQuery.js";
+import BadRequestError from "../errors/badRequestError.js";
 
 class CompanyController {
   static async registerCompany(req, res, next) {
