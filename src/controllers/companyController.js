@@ -4,11 +4,6 @@ import validateCompany from "../usecases/validateCompany.js";
 import buildSearchQuery from "../usecases/buildSearchQuery.js";
 
 class CompanyController {
-  static async countCompanies() {
-    const companiesFound = await companies.find();
-    return companiesFound.length;
-  }
-  
   static async registerCompany(req, res, next) {
     try {
       validateCompany(req.body);
@@ -58,10 +53,23 @@ class CompanyController {
     try {
       const search = buildSearchQuery(req.query);
 
-      const searchResults = companies.find(search);
-      req.result = searchResults;
+      let { limit = 5, from = 0 } = req.query;
+      limit = parseInt(limit);
+      from = parseInt(from);
 
-      next();
+      if (limit > 0 && from >= 0) {
+        const paginatedResults = await companies
+          .find(search)
+          .skip(from)
+          .limit(limit)
+          .exec();
+
+        const totalCompanies = await companies.countDocuments(search);
+
+        res.status(200).json({ total: totalCompanies, data: paginatedResults });
+      } else {
+        next(new BadRequestError());
+      }
     } catch (err) {
       next(err);
     }
